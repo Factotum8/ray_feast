@@ -1,0 +1,42 @@
+{
+	"info": {
+		"_postman_id": "a844827f-32bf-4053-b20c-8304565586d5",
+		"name": "Ray Serv Example",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21903395",
+		"_collection_link": "https://red-crescent-793933.postman.co/workspace/My-Workspace~c317981d-92fd-4477-8e0a-e562746b9103/collection/21903395-a844827f-32bf-4053-b20c-8304565586d5?action=share&source=collection_link&creator=21903395"
+	},
+	"item": [
+		{
+			"name": "New Request",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"sort_order\": \"desc\",\n    \"filters\": {\n        \"include_active\": true,\n        \"from\": \"2023-11-01T23:00:00.000000+04:00\",\n        \"to\": \"2023-12-14T23:59:59.000000+04:00\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/predict",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"predict"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
