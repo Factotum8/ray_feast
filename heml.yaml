@@ -1,0 +1,28 @@
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: "2"  # 2 ядра
+    memory: "4Gi"
+  limits:
+    cpu: "8"
+    memory: "16Gi"
+
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50  # CPU = 50% — это 50% от cpu.requests
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 70
