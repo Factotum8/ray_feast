@@ -31,28 +31,28 @@ class Predictor:
     | Простое CRUD API      | ❌        |
      """
     def __init__(self) -> None:
-        repo_path = os.getenv("FEAST_REPO_PATH", "./feast_repo")
+        repo_path = os.getenv("FEAST_REPO_PATH", "/Users/alex/Documents/projects/ray_feast/feast_repo")
         self.store = FeatureStore(repo_path=repo_path)
-        self.feature_refs = os.getenv(
-            "FEAST_FEATURE_REFS",
-            "player_features:avg_deposit",
-        ).split(",")
+        self.feature_refs = ["player_features:avg_deposit"]
         self.bias = float(os.getenv("MODEL_BIAS", "0.1"))
 
     def get_features(self, entity_id: int) -> dict[str, Any]:
         """
         Забирает online-фичи из Feast и приводит к плоскому dict.
         """
-        raw = self.store.get_online_features(
-            features=self.feature_refs,
-            entity_rows=[{"entity_id": entity_id}],
-        ).to_dict()
-
-        # Feast возвращает: {"feature_name": [value]}
-        return {
-            name: values[0] if isinstance(values, list) else values
-            for name, values in raw.items()
-        }
+        # raw = self.store.get_online_features(
+        #     features=self.feature_refs,
+        #     entity_rows=[{"player_id": entity_id}],
+        # ).to_dict()
+        #
+        # # Feast возвращает: {"feature_name": [value]}
+        # return {
+        #     name: values[0] if isinstance(values, list) else values
+        #     for name, values in raw.items()
+        # }
+        # self.store.get_feature_view("player_features")
+        print(f"list_feature_views: {self.store.list_feature_views()}")
+        return {"asdf": 123}
 
     def predict(self, entity_id: int) -> float:
         """
@@ -63,5 +63,5 @@ class Predictor:
         # --- пример бизнес-логики / модели ---
         avg_deposit = float(features.get("player_features:avg_deposit") or 0.0)
 
-        prediction = avg_deposit * 0.01 + + self.bias
+        prediction = avg_deposit * 0.01 + self.bias
         return prediction

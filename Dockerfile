@@ -17,16 +17,22 @@ COPY --from=requirements-builder /build/requirements.txt /app/requirements.txt
 
 # системные зависимости (часто нужны под feast / grpc / snappy и т.п.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential gcc \
+    build-essential gcc curl\
  && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app.py /app/app.py
+COPY predictor.py /app/predictor.py
+COPY routes.py /app/routes.py
+COPY types_.py /app/types_.py
+COPY feast_repo /app/feast_repo
 # сюда же положи feature_store.yaml и repo Feast
 # COPY feature_repo/ /app/feature_repo/
 # ENV FEAST_REPO_PATH=/app/feature_repo
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "-m", "app"]
+#CMD ["python", "-m", "app"]
+CMD ["serve", "run", "app:ingressed_app"]
+#CMD ["pwd"]
