@@ -1,0 +1,52 @@
+services:
+  # 1) Инициализация Feast repo: apply + materialize
+  feast:
+    build:
+      context: ./feast_repo
+    container_name: feast_init
+    working_dir: /repo
+    volumes:
+      - ./feast_repo:/repo
+    command: >
+      bash -lc "
+      feast apply &&
+      feast materialize 2020-01-01T00:00:00 2035-01-01T00:00:00 &&
+      echo 'Feast apply/materialize done' &&
+      tail -f /dev/null
+      "
+
+  # 2) Feast UI (Web UI) — наружу порт 8888
+  feast-ui:
+    build:
+      context: ./feast_repo
+    container_name: feast_ui
+    depends_on:
+      - feast
+    working_dir: /repo
+    volumes:
+      - ./feast_repo:/repo
+    ports:
+      - "8888:8888"
+    command: >
+      bash -lc "
+      feast --chdir /repo ui --host 0.0.0.0 --port 8888
+      "
+
+  # 3) Твоё приложение Ray Serve
+  app:
+    build:
+      context: .
+    container_name: ray_app
+    depends_on:
+      - feast
+    environment:
+      # путь к feast repo внутри контейнера
+      FEAST_REPO_PATH: /repo
+      # твоя фича
+      FEAST_FEATURE_REFS: player_features:avg_deposit
+      MODEL_BIAS: "0.1"
+    volumes:
+      # монтируем тот же repo, чтобы app видел feature_store.yaml + registry + online.db
+      - ./feast_repo:/repo
+    ports:
+      - "8000:8000"

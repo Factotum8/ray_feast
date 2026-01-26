@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+from ray import serve
 
-from types_ import PredictRequest, PredictResponse
+from types_ import PredictRequest
 
 api_router_v1 = APIRouter()
 
@@ -17,11 +18,15 @@ async def livez():
     return {"status": "ok"}
 
 
-@api_router_v1.post("/predict")
-async def predict(req: PredictRequest):
-    try:
-        return PredictResponse(
-            prediction=req.entity_id * 0.01, features={"entity_id": req.entity_id}
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
+class ApiDeployment:
+    def __init__(self, model_handle):
+        self.predictor = model_handle
+        self._predictor = serve.get_deployment_handle("Predictor")
+
+    @api_router_v1.post("/predict")
+    async def predict(self, req: PredictRequest):
+        # вызов внутреннего deployment
+        y = await self.predictor.predict.remote(req.entity_id)
+        r = {"prediction": y}
+        print(f"reply: {r}")
+        return r

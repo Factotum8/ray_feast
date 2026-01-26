@@ -7,7 +7,6 @@ from ray import serve
 from feast import FeatureStore
 
 
-
 @serve.deployment(
     ray_actor_options={"num_cpus": 2},
     max_ongoing_requests=64,
@@ -29,14 +28,14 @@ class Predictor:
     | Batch inference       | ✅        |
     | Heavy CPU/GPU         | ✅        |
     | Простое CRUD API      | ❌        |
-     """
+    """
+
     def __init__(self) -> None:
-        repo_path = os.getenv("FEAST_REPO_PATH", "./feast_repo")
+        repo_path = os.getenv(
+            "FEAST_REPO_PATH", "/Users/alex/Documents/projects/ray_feast/feast_repo"
+        )
         self.store = FeatureStore(repo_path=repo_path)
-        self.feature_refs = os.getenv(
-            "FEAST_FEATURE_REFS",
-            "player_features:avg_deposit",
-        ).split(",")
+        self.feature_refs = ["player_features:avg_deposit"]
         self.bias = float(os.getenv("MODEL_BIAS", "0.1"))
 
     def get_features(self, entity_id: int) -> dict[str, Any]:
@@ -45,7 +44,7 @@ class Predictor:
         """
         raw = self.store.get_online_features(
             features=self.feature_refs,
-            entity_rows=[{"entity_id": entity_id}],
+            entity_rows=[{"player_id": entity_id}],
         ).to_dict()
 
         # Feast возвращает: {"feature_name": [value]}
@@ -63,5 +62,5 @@ class Predictor:
         # --- пример бизнес-логики / модели ---
         avg_deposit = float(features.get("player_features:avg_deposit") or 0.0)
 
-        prediction = avg_deposit * 0.01 + + self.bias
+        prediction = avg_deposit * 0.01 + self.bias
         return prediction
