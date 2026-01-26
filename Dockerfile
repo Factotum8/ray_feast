@@ -1,38 +1,25 @@
 FROM python:3.12-slim AS requirements-builder
-
-RUN mkdir build/
-WORKDIR /build/
-
+WORKDIR /build
 RUN pip install uv
-
 COPY pyproject.toml uv.lock /build/
-
 RUN uv pip compile pyproject.toml --quiet --output-file requirements.txt
 
 FROM python:3.12-slim
-
 WORKDIR /app
 
 COPY --from=requirements-builder /build/requirements.txt /app/requirements.txt
 
-# системные зависимости (часто нужны под feast / grpc / snappy и т.п.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential gcc curl\
+    build-essential gcc curl \
  && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app.py /app/app.py
-COPY predictor.py /app/predictor.py
-COPY routes.py /app/routes.py
-COPY types_.py /app/types_.py
-COPY feast_repo /app/feast_repo
-# сюда же положи feature_store.yaml и repo Feast
-# COPY feature_repo/ /app/feature_repo/
-# ENV FEAST_REPO_PATH=/app/feature_repo
+COPY app.py predictor.py routes.py types_.py /app/
 
 ENV PYTHONUNBUFFERED=1
 
-#CMD ["python", "-m", "app"]
-CMD ["serve", "run", "app:ingressed_app"]
-#CMD ["pwd"]
+
+# another way to start see app.py
+#CMD ["python", "app.py"]
+CMD ["bash", "-lc", "ray start --head --disable-usage-stats --dashboard-host 0.0.0.0 && serve start --http-host 0.0.0.0 --http-port 8000 --address auto && serve run app:ingressed_app"]

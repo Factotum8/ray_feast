@@ -7,7 +7,6 @@ from ray import serve
 from feast import FeatureStore
 
 
-
 @serve.deployment(
     ray_actor_options={"num_cpus": 2},
     max_ongoing_requests=64,
@@ -29,9 +28,12 @@ class Predictor:
     | Batch inference       | ✅        |
     | Heavy CPU/GPU         | ✅        |
     | Простое CRUD API      | ❌        |
-     """
+    """
+
     def __init__(self) -> None:
-        repo_path = os.getenv("FEAST_REPO_PATH", "/Users/alex/Documents/projects/ray_feast/feast_repo")
+        repo_path = os.getenv(
+            "FEAST_REPO_PATH", "/Users/alex/Documents/projects/ray_feast/feast_repo"
+        )
         self.store = FeatureStore(repo_path=repo_path)
         self.feature_refs = ["player_features:avg_deposit"]
         self.bias = float(os.getenv("MODEL_BIAS", "0.1"))
@@ -40,19 +42,16 @@ class Predictor:
         """
         Забирает online-фичи из Feast и приводит к плоскому dict.
         """
-        # raw = self.store.get_online_features(
-        #     features=self.feature_refs,
-        #     entity_rows=[{"player_id": entity_id}],
-        # ).to_dict()
-        #
-        # # Feast возвращает: {"feature_name": [value]}
-        # return {
-        #     name: values[0] if isinstance(values, list) else values
-        #     for name, values in raw.items()
-        # }
-        # self.store.get_feature_view("player_features")
-        print(f"list_feature_views: {self.store.list_feature_views()}")
-        return {"asdf": 123}
+        raw = self.store.get_online_features(
+            features=self.feature_refs,
+            entity_rows=[{"player_id": entity_id}],
+        ).to_dict()
+
+        # Feast возвращает: {"feature_name": [value]}
+        return {
+            name: values[0] if isinstance(values, list) else values
+            for name, values in raw.items()
+        }
 
     def predict(self, entity_id: int) -> float:
         """

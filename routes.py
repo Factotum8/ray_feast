@@ -23,11 +23,10 @@ class ApiDeployment:
         self.predictor = model_handle
         self._predictor = serve.get_deployment_handle("Predictor")
 
-
     @api_router_v1.post("/predict")
     async def predict(self, req: PredictRequest):
         # вызов внутреннего deployment
         y = await self.predictor.predict.remote(req.entity_id)
-        r =  {"prediction": y}
+        r = {"prediction": y}
         print(f"reply: {r}")
         return r

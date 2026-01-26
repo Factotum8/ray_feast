@@ -16,3 +16,12 @@ feast get-online-features \
   --features "player_features:avg_deposit" \
   --entities player_id=1
 ```
+
+Check app:
+```
+curl --location 'http://0.0.0.0:8000/predict' \                    
+--header 'Content-Type: application/json' \
+--data '{                                               
+    "entity_id": 123
+}'                                                       
+```
